@@ -1,0 +1,328 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>CS61b_Lec19_Hashing | qqqsw</title>
+  <meta name="author" content="qqqsw">
+  
+  <meta name="description" content="qqqsw&#39;s blog">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="CS61b_Lec19_Hashing"/>
+  <meta property="og:site_name" content="qqqsw"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="qqqsw" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/prism.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-70812759-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-70812759-1');
+</script>
+
+
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">qqqsw</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class=""></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> CS61b_Lec19_Hashing</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>理解hash table，让我们从最简单的开始：</p>
+<span id="more"></span>
+<h2 id="DataIndexedArray"><a href="#DataIndexedArray" class="headerlink" title="DataIndexedArray"></a>DataIndexedArray</h2><p>Create an array of booleans indexed by data!</p>
+<ul>
+<li>Initially all values are false.</li>
+<li>When an item is added, set appropriate index to true.<br>添加了0、5、10在这个DataIndexedArray里：</li>
+</ul>
+<p><img src="https://s2.loli.net/2024/07/16/RnNQJYoq6re4dFt.png" alt="Pasted image 20240427193346.png =100x"></p>
+<p>如果用这样的数组来存数据的话，仅仅是存数字就需要很多空间，并且还很浪费，而且一些其他的数据，比如字符串，汉字这些没法存，虽然它很快：<br><img src="https://s2.loli.net/2024/07/16/TJR2Dvw4iPr9xK6.png" alt="Pasted image 20240427193551.png =100x"></p>
+<p>接下来我们继续改进：<br>开始存字符串进去，比如cat、dog这些，数字是本身就是index，而字符串如果只是用首位的话就很容易产生冲突 — cat存第三个，那我cap存第几个呢？</p>
+<h2 id="Avoiding-Collisions"><a href="#Avoiding-Collisions" class="headerlink" title="Avoiding Collisions"></a>Avoiding Collisions</h2><p>Use all digits by multiplying each by a power of 27.<br><img src="https://s2.loli.net/2024/07/16/Bv7ajx5RynMShCP.png" alt="Pasted image 20240427194100.png =100x"><br>这种算index的方法和进制很像：<br><img src="https://s2.loli.net/2024/07/16/aUlRcgVSkCvu2fs.png" alt="Pasted image 20240427194158.png =100x"></p>
+<p>上面只存了小写字母，非常受限，我们再一次改进：<br>先引入ascii的概念，第33 - 126位是可见字符，超出ascii就是unicode了，扩大基数（base）<br>举例一个中文短语编码（unicode）<br><img src="https://s2.loli.net/2024/07/16/UicofBlTXgCbjmG.png" alt="Pasted image 20240427194735.png =100x"></p>
+<h2 id="Integer-Overflow"><a href="#Integer-Overflow" class="headerlink" title="Integer Overflow"></a>Integer Overflow</h2><p>数的大小有限制，超出则会溢出，这就导致可能会有两个算出来是一样的index，就是冲突：<br><img src="https://s2.loli.net/2024/07/16/3sUXBJpMoVTuLnS.png" alt="Pasted image 20240427195013.png =100x"></p>
+<p>（箭头那里是返回true了）</p>
+<p>Overflow can result in collisions, causing incorrect answers.</p>
+<blockquote>
+<p>引入Pigeonhole Principle：<br>大致意思是十个鸽子放入九个笼子中，必定有一个笼子有两只鸟（每个笼子都需要有鸽子）<br>潜在哈希冲突：项目数量超过了哈希函数的输出情况<br><strong>Pigeonhole principle tells us that collisions are inevitable due to integer overflow</strong>冲突无法避免</p>
+</blockquote>
+<p>那么：</p>
+<ul>
+<li>如何解决哈希冲突（collision handling）</li>
+<li>如何计算任意一个object的哈希码？（computing a hashCode）</li>
+</ul>
+<h2 id="Make-a-Bucket"><a href="#Make-a-Bucket" class="headerlink" title="Make a Bucket"></a>Make a Bucket</h2><p>别急，接着继续改进：<br>Suppose N items have the same numerical representation h:</p>
+<ul>
+<li>Instead of storing true in position h, store a “bucket” of these N items at position h.</li>
+</ul>
+<blockquote>
+<p>How to implement a “bucket”？</p>
+</blockquote>
+<ul>
+<li>Conceptually simplest way: LinkedList.</li>
+<li>Could also use ArrayLists.</li>
+<li>Could also use an ArraySet.</li>
+<li>Will see it doesn’t really matter what you do.<br>bucket本身的性质并不重要</li>
+</ul>
+<p>有冲突的话直接全塞进原地，hash table初具雏形<br><img src="https://s2.loli.net/2024/07/16/7tljIoUi6QV3HK5.png" alt="Pasted image 20240427211300.png =100x"></p>
+<p>但是我们不需要这么长的list，so looong 的bucket，这不跟链表没差吗。<br>答案是模，把长长的bucket斩断分到其他bucket里去</p>
+<h2 id="Hash-Table"><a href="#Hash-Table" class="headerlink" title="Hash Table"></a>Hash Table</h2><p>然后 <strong>hash table</strong>上场！！</p>
+<ul>
+<li>Data is converted by a hash function into an integer representation called a hash code. </li>
+<li>The hash code is then reduced to a valid index, usually using the modulus operator, e.g. 2348762878 % 10 &#x3D; 8.<br><img src="https://s2.loli.net/2024/07/16/GOVfEuymLqMprZ8.png" alt="Pasted image 20240427211716.png =100x"></li>
+</ul>
+<h2 id="Hash-Table-Runtime"><a href="#Hash-Table-Runtime" class="headerlink" title="Hash Table Runtime"></a>Hash Table Runtime</h2><ul>
+<li>The good news: We use way less memory and can now handle arbitrary data.</li>
+<li>The bad news: Worst case runtime is now Θ(Q), where Q is the length of the longest list.</li>
+</ul>
+<p>find x的算法scale：<br><img src="https://s2.loli.net/2024/07/16/bqyJzZVmQR5aHs8.png" alt="Pasted image 20240427212000.png =100x"></p>
+<h2 id="Load-factor"><a href="#Load-factor" class="headerlink" title="Load factor"></a>Load factor</h2><p>这样显然不太行，都N了你还不如直接上链表呢，继续改进：<br>Suppose we have:</p>
+<ul>
+<li>An <mark style="background: #FFB8EBA6;">increasing number </mark>of buckets<mark style="background: #BBFABBA6;"> M</mark>.</li>
+<li>An <mark style="background: #FFB8EBA6;">increasing number</mark> of items <mark style="background: #ADCCFFA6;">N</mark>.<br>As long as M &#x3D; Θ(N), then O(N&#x2F;M) &#x3D; O(1).</li>
+</ul>
+<p>N在变大的同时，bucket的数量也跟着大，相比一除就是1了，之前那个bucket定死的是N&#x2F;5，不就是N。实现的大致方法是判断N&#x2F;M的比值，比如 &gt; 5时M double一下，这里的比值就是下面的load factor</p>
+<blockquote>
+<p>Even distribution of item is critical for good hash table performance.</p>
+</blockquote>
+<ul>
+<li>Both tables below have<mark style="background: #D2B3FFA6;"> load factor </mark>of N&#x2F;M &#x3D; 1.</li>
+<li>Left table is much worse!<ul>
+<li>Contains is Θ(N) for x.<br><img src="https://s2.loli.net/2024/07/16/yFDhitJWueGRzE6.png" alt="Pasted image 20240427212605.png =100x"></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Default implementation simply returns the memory address of the object.<br>Java里面默认的hashcode就是返回当前object的地址，这个方法真聪明。</p>
+</blockquote>
+<h2 id="Warning"><a href="#Warning" class="headerlink" title="Warning"></a>Warning</h2><ul>
+<li>Never store objects that can change in a HashSet or HashMap!</li>
+<li>Never override equals without also overriding hashCode.</li>
+</ul>
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+
+	</div>
+
+	
+	
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+	
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2024-07-16 
+	</div>
+	
+
+	<!-- categories -->
+    
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#DataIndexedArray"><span class="toc-article-text">DataIndexedArray</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Avoiding-Collisions"><span class="toc-article-text">Avoiding Collisions</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Integer-Overflow"><span class="toc-article-text">Integer Overflow</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Make-a-Bucket"><span class="toc-article-text">Make a Bucket</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Hash-Table"><span class="toc-article-text">Hash Table</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Hash-Table-Runtime"><span class="toc-article-text">Hash Table Runtime</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Load-factor"><span class="toc-article-text">Load factor</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Warning"><span class="toc-article-text">Warning</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2024 qqqsw's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>
